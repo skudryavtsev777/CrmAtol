@@ -1,0 +1,29 @@
+﻿@model CrmAtol.Models.UserRoleViewModel
+@{
+    ViewData["Title"] = "Изменение роли";
+}
+
+<h1>Изменение роли пользователя @Model.Email</h1>
+
+<form method="post" asp-action="Edit">
+    <input type="hidden" name="userId" value="@Model.UserId" />
+    <div class="mb-3">
+        <label class="form-label">Роль</label>
+        <select name="newRole" class="form-select">
+            <option value="">-- Без роли --</option>
+            @foreach (var role in Model.AllRoles)
+            {
+                if (role == Model.CurrentRole)
+                {
+                    <option value="@role" selected>@role</option>
+                }
+                else
+                {
+                    <option value="@role">@role</option>
+                }
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+</form>

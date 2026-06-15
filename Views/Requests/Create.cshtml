@@ -1,0 +1,69 @@
+﻿@model CrmAtol.Models.Request
+@using CrmAtol.Models
+
+@{
+    ViewData["Title"] = "Создание заявки";
+}
+
+<h1>Создание заявки</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="ClientId" class="form-label"></label>
+                <select asp-for="ClientId" class="form-control" asp-items="@(new SelectList(ViewBag.Clients, "Id", "Name"))">
+                    <option value="">-- Выберите клиента --</option>
+                </select>
+                <span asp-validation-for="ClientId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Subject" class="form-label"></label>
+                <input asp-for="Subject" class="form-control" />
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Priority" class="form-label"></label>
+                        <select asp-for="Priority" class="form-control" asp-items="Html.GetEnumSelectList<Enums.RequestPriority>()"></select>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="AssignedToUserId" class="form-label">Исполнитель</label>
+                        <select asp-for="AssignedToUserId" class="form-control" asp-items="@(new SelectList(ViewBag.Users, "Id", "UserName"))">
+                            <option value="">-- Не назначать --</option>
+                        </select>
+                        <span asp-validation-for="AssignedToUserId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <input type="submit" value="Создать" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Назад к списку</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

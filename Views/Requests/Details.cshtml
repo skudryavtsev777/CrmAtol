@@ -1,0 +1,190 @@
+﻿@model CrmAtol.Models.Request
+@using Microsoft.AspNetCore.Identity
+@using CrmAtol.Models
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Детали заявки";
+    var interactions = ViewBag.Interactions as List<CrmAtol.Models.Interaction>;
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1>Заявка @Model.Number</h1>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Редактировать</a>
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+    </div>
+</div>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <strong>Информация о заявке</strong>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width:30%">Номер</th>
+                        <td>@Model.Number</td>
+                    </tr>
+                    <tr>
+                        <th>Дата создания</th>
+                        <td>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th>Клиент</th>
+                        <td>@Model.Client?.Name</td>
+                    </tr>
+                    <tr>
+                        <th>Тема</th>
+                        <td>@Model.Subject</td>
+                    </tr>
+                    <tr>
+                        <th>Описание</th>
+                        <td>@(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</td>
+                    </tr>
+                    <tr>
+                        <th>Приоритет</th>
+                        <td>@Model.Priority</td>
+                    </tr>
+                    <tr>
+                        <th>Статус</th>
+                        <td>
+                            @if (Model.Status == Enums.RequestStatus.Закрыта)
+                            {
+                                <span class="badge bg-success">@Model.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">@Model.Status</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Исполнитель</th>
+                        <td>@(Model.AssignedToUser?.UserName ?? "Не назначен")</td>
+                    </tr>
+                    <tr>
+                        <th>Срок реакции</th>
+                        <td class="@(Model.DeadlineReaction < DateTime.Now && Model.Status != Enums.RequestStatus.Закрыта ? "text-danger fw-bold" : "")">
+                            @Model.DeadlineReaction.ToString("dd.MM.yyyy HH:mm")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Срок решения</th>
+                        <td class="@(Model.DeadlineResolution < DateTime.Now && Model.Status != Enums.RequestStatus.Закрыта ? "text-danger fw-bold" : "")">
+                            @Model.DeadlineResolution.ToString("dd.MM.yyyy HH:mm")
+                        </td>
+                    </tr>
+                    @if (Model.ClosedAt.HasValue)
+                    {
+                        <tr>
+                            <th>Дата закрытия</th>
+                            <td>@Model.ClosedAt.Value.ToString("dd.MM.yyyy HH:mm")</td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Resolution))
+                    {
+                        <tr>
+                            <th>Результат</th>
+                            <td>@Model.Resolution</td>
+                        </tr>
+                    }
+                </table>
+
+                @if (Model.Status != Enums.RequestStatus.Закрыта)
+                {
+                    <hr />
+                    <h5>Закрыть заявку</h5>
+                    <form asp-action="Close" method="post" style="display:inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <textarea name="resolution" class="form-control" rows="2" placeholder="Укажите результат выполнения..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success" onclick="return confirm('Подтвердите закрытие заявки')">Закрыть заявку</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+    <!-- Блок быстрого изменения статуса -->
+    @if (Model.Status != Enums.RequestStatus.Закрыта)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <strong>Изменить статус</strong>
+            </div>
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    @if (Model.Status != Enums.RequestStatus.Выполняется)
+                    {
+                        <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="newStatus" value="@Enums.RequestStatus.Выполняется" />
+                            <button type="submit" class="btn btn-warning">В работу</button>
+                        </form>
+                    }
+
+                    @if (Model.Status != Enums.RequestStatus.Выполнена && Model.Status != Enums.RequestStatus.Закрыта)
+                    {
+                        <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="newStatus" value="@Enums.RequestStatus.Выполнена" />
+                            <button type="submit" class="btn btn-success" onclick="return confirm('Подтвердите выполнение заявки')">Выполнить</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    <div class="col-md-5">
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">
+                <strong>История взаимодействий</strong>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                @if (interactions != null && interactions.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var interaction in interactions)
+                        {
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">@interaction.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                    <span class="badge bg-info">@interaction.Type</span>
+                                </div>
+                                <div class="mt-2">@interaction.Content</div>
+                                <div class="mt-1"><small class="text-muted">Автор: @(interaction.AuthorUser?.UserName ?? interaction.AuthorUserId)</small></div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">Нет взаимодействий</p>
+                }
+
+                <hr />
+                <h6>Добавить взаимодействие</h6>
+                <form asp-action="AddInteraction" method="post">
+                    <input type="hidden" name="requestId" value="@Model.Id" />
+                    <div class="mb-2">
+                        <select name="type" class="form-select">
+                            <option value="Звонок">Звонок</option>
+                            <option value="Email">Email</option>
+                            <option value="Встреча">Встреча</option>
+                            <option value="Сообщение">Сообщение</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <textarea name="content" class="form-control" rows="2" placeholder="Текст взаимодействия..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">+ Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

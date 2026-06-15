@@ -1,0 +1,39 @@
+﻿@model CrmAtol.Models.Client
+
+@{
+    ViewData["Title"] = "Детали клиента";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1>Клиент: @Model.Name</h1>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Редактировать</a>
+        <a asp-action="Index" class="btn btn-secondary">Назад к списку</a>
+    </div>
+</div>
+
+<hr />
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <strong>Информация о клиенте</strong>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Наименование</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">ИНН</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Inn) ? "—" : Model.Inn)</dd>
+
+            <dt class="col-sm-3">Телефон</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Phone) ? "—" : Model.Phone)</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Email) ? "—" : Model.Email)</dd>
+
+            <dt class="col-sm-3">Адрес</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Address) ? "—" : Model.Address)</dd>
+        </dl>
+    </div>
+</div>

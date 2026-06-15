@@ -1,0 +1,86 @@
+﻿@model CrmAtol.Models.Request
+@using CrmAtol.Models
+
+@{
+    ViewData["Title"] = "Редактирование заявки";
+}
+
+<h1>Редактирование заявки</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Number" />
+            <input type="hidden" asp-for="CreatedAt" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="ClientId" class="form-label"></label>
+                <select asp-for="ClientId" class="form-control" asp-items="@(new SelectList(ViewBag.Clients, "Id", "Name"))"></select>
+                <span asp-validation-for="ClientId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Subject" class="form-label"></label>
+                <input asp-for="Subject" class="form-control" />
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label asp-for="Priority" class="form-label"></label>
+                        <select asp-for="Priority" class="form-control" asp-items="Html.GetEnumSelectList<Enums.RequestPriority>()"></select>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label"></label>
+                        <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<Enums.RequestStatus>()"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label asp-for="AssignedToUserId" class="form-label">Исполнитель</label>
+                        <select asp-for="AssignedToUserId" class="form-control" asp-items="@(new SelectList(ViewBag.Users, "Id", "UserName"))">
+                            <option value="">-- Не назначен --</option>
+                        </select>
+                        <span asp-validation-for="AssignedToUserId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Status == Enums.RequestStatus.Закрыта)
+            {
+                <div class="mb-3">
+                    <label asp-for="Resolution" class="form-label"></label>
+                    <textarea asp-for="Resolution" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Resolution" class="text-danger"></span>
+                </div>
+            }
+
+            <div class="mb-3">
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

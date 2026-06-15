@@ -1,0 +1,80 @@
+﻿@model IEnumerable<CrmAtol.Models.Request>
+@using CrmAtol.Models
+
+@{
+    ViewData["Title"] = "Удаленные заявки";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1>Удаленные заявки</h1>
+    <a asp-action="Index" class="btn btn-secondary">← Назад к активным заявкам</a>
+</div>
+
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Корзина пуста. Нет удаленных заявок.
+    </div>
+}
+else
+{
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Номер</th>
+                <th>Дата удаления</th>
+                <th>Клиент</th>
+                <th>Тема</th>
+                <th>Приоритет</th>
+                <th>Исполнитель</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Number</td>
+                    <td>@(item.ClosedAt?.ToString("dd.MM.yyyy HH:mm") ?? item.CreatedAt.ToString("dd.MM.yyyy"))</td>
+                    <td>@item.Client?.Name</td>
+                    <td>@item.Subject</td>
+                    <td>
+                        @if (item.Priority == Enums.RequestPriority.Высокий)
+                        {
+                            <span class="badge bg-danger">@item.Priority</span>
+                        }
+                        else if (item.Priority == Enums.RequestPriority.Критический)
+                        {
+                            <span class="badge bg-dark">@item.Priority</span>
+                        }
+                        else if (item.Priority == Enums.RequestPriority.Средний)
+                        {
+                            <span class="badge bg-warning">@item.Priority</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@item.Priority</span>
+                        }
+                    </td>
+                    <td>@(item.AssignedToUser?.UserName ?? "Не назначен")</td>
+                    <td>
+                        <form asp-action="Restore" asp-route-id="@item.Id" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Восстановить заявку @item.Number?')">
+                                Восстановить
+                            </button>
+                        </form>
+                        <form asp-action="PermanentDelete" asp-route-id="@item.Id" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить заявку @item.Number навсегда? Это действие необратимо!')">
+                                Удалить навсегда
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

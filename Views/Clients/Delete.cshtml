@@ -1,0 +1,36 @@
+﻿@model CrmAtol.Models.Client
+
+@{
+    ViewData["Title"] = "Удаление клиента";
+}
+
+<h1>Удаление клиента</h1>
+
+<div class="alert alert-danger">
+    <h3>Вы уверены, что хотите удалить этого клиента?</h3>
+    <p>Внимание! Если у клиента есть связанные заявки, удаление будет запрещено базой данных.</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Наименование</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">ИНН</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Inn) ? "—" : Model.Inn)</dd>
+
+            <dt class="col-sm-3">Телефон</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Phone) ? "—" : Model.Phone)</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@(string.IsNullOrEmpty(Model.Email) ? "—" : Model.Email)</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post" class="mt-3">
+    <input type="hidden" asp-for="Id" />
+    <input type="submit" value="Удалить" class="btn btn-danger" />
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+</form>

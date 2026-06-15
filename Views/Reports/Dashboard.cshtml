@@ -1,0 +1,136 @@
+﻿@model CrmAtol.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Панель управления";
+}
+
+<div class="container-fluid">
+    <h1 class="mb-4">Панель управления</h1>
+
+    <div class="row">
+        <!-- Виджет 1: Всего заявок -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Всего заявок</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalRequests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Виджет 2: Открытые заявки -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">В работе</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.OpenRequests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Виджет 3: Закрытые заявки -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Закрыто</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ClosedRequests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Виджет 4: Просроченные заявки -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Просрочено</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.OverdueRequests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Заявки по статусам</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Заявки по приоритетам</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="priorityChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Загрузка сотрудников (Топ-5)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="employeeChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // График по статусам
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusLabels = @Html.Raw(Json.Serialize(Model.RequestsByStatus.Select(s => s.Status)));
+        const statusCounts = @Html.Raw(Json.Serialize(Model.RequestsByStatus.Select(s => s.Count)));
+        new Chart(statusCtx, {
+        type: 'pie',
+        data: { labels: statusLabels, datasets: [{ data: statusCounts, backgroundColor: ['#f39c12', '#3498db', '#2ecc71', '#e74c3c'] }] }
+        });
+
+        // График по приоритетам
+        const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+        const priorityLabels = @Html.Raw(Json.Serialize(Model.RequestsByPriority.Select(p => p.Priority)));
+        const priorityCounts = @Html.Raw(Json.Serialize(Model.RequestsByPriority.Select(p => p.Count)));
+        new Chart(priorityCtx, {
+        type: 'bar',
+        data: { labels: priorityLabels, datasets: [{ label: 'Количество заявок', data: priorityCounts, backgroundColor: '#3498db' }] }
+        });
+
+        // График загрузки сотрудников
+        const employeeCtx = document.getElementById('employeeChart').getContext('2d');
+        const employeeLabels = @Html.Raw(Json.Serialize(Model.EmployeeLoad.Select(e => e.UserName)));
+        const employeeCounts = @Html.Raw(Json.Serialize(Model.EmployeeLoad.Select(e => e.Count)));
+        new Chart(employeeCtx, {
+        type: 'bar',
+        data: { labels: employeeLabels, datasets: [{ label: 'Активных заявок', data: employeeCounts, backgroundColor: '#2ecc71' }] }
+        });
+    </script>
+}

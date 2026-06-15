@@ -1,0 +1,71 @@
+﻿@model IEnumerable<CrmAtol.Models.Request>
+@using CrmAtol.Models
+
+@{
+    ViewData["Title"] = "Расширенные отчеты";
+}
+
+<h1>Расширенные отчеты</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <strong>Сводка по заявкам</strong>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr><th>Всего заявок</th><td>@Model.Count()</td></tr>
+                    <tr><th>Открытых</th><td>@Model.Count(r => r.Status != Enums.RequestStatus.Закрыта)</td></tr>
+                    <tr><th>Закрытых</th><td>@Model.Count(r => r.Status == Enums.RequestStatus.Закрыта)</td></tr>
+                    <tr><th>Просроченных</th><td>@Model.Count(r => r.DeadlineResolution < DateTime.Now && r.Status != Enums.RequestStatus.Закрыта)</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <strong>Эффективность по SLA</strong>
+            </div>
+            <div class="card-body">
+                @{
+                    var closedRequests = Model.Where(r => r.Status == Enums.RequestStatus.Закрыта).ToList();
+                    var onTime = closedRequests.Count(r => r.ClosedAt <= r.DeadlineResolution);
+                    var slaPercent = closedRequests.Any() ? (onTime * 100 / closedRequests.Count) : 0;
+                }
+                <p>Соблюдение сроков: <strong>@slaPercent%</strong></p>
+                <div class="progress">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: @slaPercent%;" aria-valuenow="@slaPercent" aria-valuemin="0" aria-valuemax="100">@slaPercent%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-secondary text-white">
+        <strong>Детализация по заявкам</strong>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr><th>Номер</th><th>Клиент</th><th>Тема</th><th>Приоритет</th><th>Статус</th><th>Дата создания</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderByDescending(r => r.CreatedAt).Take(20))
+                {
+                    <tr>
+                        <td>@item.Number</td>
+                        <td>@item.Client?.Name</td>
+                        <td>@item.Subject</td>
+                        <td>@item.Priority</td>
+                        <td>@item.Status</td>
+                        <td>@item.CreatedAt.ToString("dd.MM.yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
