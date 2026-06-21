@@ -22,28 +22,30 @@ namespace CrmAtol.Controllers
         {
             var model = new DashboardViewModel();
 
-            // 1. Статистика для виджетов
-            model.TotalRequests = await _context.Requests.CountAsync();
-            model.OpenRequests = await _context.Requests.CountAsync(r => r.Status != RequestStatus.Закрыта);
-            model.ClosedRequests = await _context.Requests.CountAsync(r => r.Status == RequestStatus.Закрыта);
+            // Статистика для виджетов (только не удаленные заявки)
+            model.TotalRequests = await _context.Requests.CountAsync(r => r.IsDeleted == false);
+            model.OpenRequests = await _context.Requests.CountAsync(r => r.IsDeleted == false && r.Status != RequestStatus.Закрыта);
+            model.ClosedRequests = await _context.Requests.CountAsync(r => r.IsDeleted == false && r.Status == RequestStatus.Закрыта);
             model.OverdueRequests = await _context.Requests
-                .CountAsync(r => r.DeadlineResolution < DateTime.Now && r.Status != RequestStatus.Закрыта);
+                .CountAsync(r => r.IsDeleted == false && r.DeadlineResolution < DateTime.Now && r.Status != RequestStatus.Закрыта);
 
-            // 2. Данные для графика "Заявки по статусам"
+            // Данные для графика "Заявки по статусам"
             model.RequestsByStatus = await _context.Requests
+                .Where(r => r.IsDeleted == false)
                 .GroupBy(r => r.Status)
                 .Select(g => new StatusCount { Status = g.Key.ToString(), Count = g.Count() })
                 .ToListAsync();
 
-            // 3. Данные для графика "Заявки по приоритетам"
+            // Данные для графика "Заявки по приоритетам"
             model.RequestsByPriority = await _context.Requests
+                .Where(r => r.IsDeleted == false)
                 .GroupBy(r => r.Priority)
                 .Select(g => new PriorityCount { Priority = g.Key.ToString(), Count = g.Count() })
                 .ToListAsync();
 
-            // 4. Данные для графика загрузки сотрудников (Топ-5)
+            // Данные для графика загрузки сотрудников (только активные, не удаленные заявки)
             model.EmployeeLoad = await _context.Requests
-                .Where(r => r.AssignedToUserId != null)
+                .Where(r => r.IsDeleted == false && r.AssignedToUserId != null && r.Status != RequestStatus.Закрыта)
                 .GroupBy(r => r.AssignedToUser.UserName)
                 .Select(g => new EmployeeLoad { UserName = g.Key, Count = g.Count() })
                 .OrderByDescending(x => x.Count)

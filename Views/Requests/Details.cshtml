@@ -110,36 +110,7 @@
             </div>
         </div>
     </div>
-    <!-- Блок быстрого изменения статуса -->
-    @if (Model.Status != Enums.RequestStatus.Закрыта)
-    {
-        <div class="card mb-3">
-            <div class="card-header bg-info text-white">
-                <strong>Изменить статус</strong>
-            </div>
-            <div class="card-body">
-                <div class="btn-group" role="group">
-                    @if (Model.Status != Enums.RequestStatus.Выполняется)
-                    {
-                        <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post" style="display:inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="newStatus" value="@Enums.RequestStatus.Выполняется" />
-                            <button type="submit" class="btn btn-warning">В работу</button>
-                        </form>
-                    }
-
-                    @if (Model.Status != Enums.RequestStatus.Выполнена && Model.Status != Enums.RequestStatus.Закрыта)
-                    {
-                        <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post" style="display:inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="newStatus" value="@Enums.RequestStatus.Выполнена" />
-                            <button type="submit" class="btn btn-success" onclick="return confirm('Подтвердите выполнение заявки')">Выполнить</button>
-                        </form>
-                    }
-                </div>
-            </div>
-        </div>
-    }
+    
     <div class="col-md-5">
         <div class="card mb-3">
             <div class="card-header bg-secondary text-white">
